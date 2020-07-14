@@ -1,12 +1,15 @@
-FROM akito13/alpine AS build
+FROM alpine:edge
 
-FROM akito13/alpine
-
-ARG TAG="v1.3.9"
-ARG BRANCH="master"
 ARG BUILD_VERSION
 ARG BUILD_REVISION
 ARG BUILD_DATE
+ARG USER_ID=510
+ARG USER_NAME="deluge"
+ARG USER_HOME="/home/deluge"
+ARG CONF_DIR="${USER_HOME}/config"
+ARG DATA_DIR="${USER_HOME}/tnt"
+ARG INCOMPLETE_DIR="${DATA_DIR}/incomplete"
+ARG AUTOADD_DIR="${DATA_DIR}/.torrent"
 
 LABEL maintainer="Akito <the@akito.ooo>"
 LABEL org.opencontainers.image.authors="Akito <the@akito.ooo>"
@@ -14,25 +17,34 @@ LABEL org.opencontainers.image.vendor="Akito"
 LABEL org.opencontainers.image.version="${BUILD_VERSION}"
 LABEL org.opencontainers.image.revision="${BUILD_REVISION}"
 LABEL org.opencontainers.image.created="${BUILD_DATE}"
-LABEL org.opencontainers.image.title="Example Docker Image"
-LABEL org.opencontainers.image.description="Example Docker Image for Akito/docker.tpl"
-LABEL org.opencontainers.image.url="akito.ooo"
-LABEL org.opencontainers.image.documentation="doc.akito.ooo"
-LABEL org.opencontainers.image.source="https://github.com/theAkito/docker-alpine"
+LABEL org.opencontainers.image.title="Deluge Daemon"
+LABEL org.opencontainers.image.description="Deluge daemon in a Docker image. Easy to use and ready to go."
+LABEL org.opencontainers.image.source="https://github.com/theAkito/docker-deluge"
 LABEL org.opencontainers.image.licenses="GPL-3.0+"
 
+RUN echo "@testing http://nl.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories
 RUN apk add --update \
-    alpine-sdk \
-    libressl-dev
+    deluge@testing
+RUN rm -fr /tmp/* /var/tmp/* /var/cache/*/*
 
-WORKDIR /root/rhash
+RUN adduser --gecos ${USER_NAME} \
+            --system \
+            --disabled-password \
+            --uid ${USER_ID} \
+            --shell /bin/ash \
+            --home ${USER_HOME} \
+            ${USER_NAME}
 
-RUN git clone https://github.com/rhash/RHash.git /root/rhash && \
-    git fetch --all --tags --prune && \
-    #git checkout tags/${TAG} && \
-    git checkout ${BRANCH} && \
-    ./configure --enable-openssl --enable-static --disable-openssl-runtime && \
-    make
+WORKDIR ${USER_HOME}
+USER deluge
 
-ENTRYPOINT [ "/bin/bash" ]
-CMD [ "/entrypoint.sh" ]
+RUN mkdir ${CONF_DIR} \
+          ${DATA_DIR} \
+          ${INCOMPLETE_DIR} \
+          ${AUTOADD_DIR}
+
+COPY --chown=deluge:root config/* ${CONF_DIR}/
+
+EXPOSE 58846/tcp
+ENTRYPOINT [ "deluged" ]
+CMD [ "--do-not-daemonize", "--config", "/home/deluge/config", "--loglevel", "info" ]

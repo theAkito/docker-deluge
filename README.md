@@ -1,41 +1,38 @@
-![Docker Cloud Build Status](https://img.shields.io/docker/cloud/build/akito13/alpine?style=plastic)
-![Docker Image Version (latest semver)](https://img.shields.io/docker/v/akito13/alpine?style=plastic)
+![Docker Cloud Build Status](https://img.shields.io/docker/cloud/build/akito13/deluge?style=plastic)
+![Docker Image Version (latest semver)](https://img.shields.io/docker/v/akito13/deluge?style=plastic)
 
-![Docker Stars](https://img.shields.io/docker/stars/akito13/alpine?style=plastic)
-![Docker Pulls](https://img.shields.io/docker/pulls/akito13/alpine?style=plastic)
+![Docker Stars](https://img.shields.io/docker/stars/akito13/deluge?style=plastic)
+![Docker Pulls](https://img.shields.io/docker/pulls/akito13/deluge?style=plastic)
 
-![Docker Image Size (latest semver)](https://img.shields.io/docker/image-size/akito13/alpine?style=plastic)
-![Docker Cloud Automated build](https://img.shields.io/docker/cloud/automated/akito13/alpine?style=plastic)
+![Docker Image Size (latest semver)](https://img.shields.io/docker/image-size/akito13/deluge?style=plastic)
+![Docker Cloud Automated build](https://img.shields.io/docker/cloud/automated/akito13/deluge?style=plastic)
 
 [![Upstream](https://img.shields.io/badge/upstream-project-yellow?style=plastic)](https://github.com/borgbackup/borg)
 
-![GitHub](https://img.shields.io/github/license/theAkito/docker-alpine?style=plastic)
+![GitHub](https://img.shields.io/github/license/theAkito/docker-deluge?style=plastic)
 ![Liberapay patrons](https://img.shields.io/liberapay/patrons/Akito?style=plastic)
 
 ## What
-My base alpine image I use for my other alpine-based images.
+Deluge 2.x daemon in a Docker image. Easy to use and ready to go.
 
 ## Why
-Promoted `bash` to shell first class.
+To provide an easy to set up Deluge daemon in Docker, without any hassle. It is pretty much ready to go. The only thing you need to set up are the volume locations on your host, if you care to put them in a special location. Otherwise, just run the image, as specified below.
 
 ## How
-Recommended way of usage:
+1. Adjust the volume locations in the  `docker-compose.yaml` file.
+2. Run the daemon:
 ```bash
-alias rhash='docker run --rm -it -v "$(pwd):$(pwd)" -w "$(pwd)" akito13/rhash rhash '
-```
-Now run the `rhash` command as you would always do:
-```bash
-rhash --uppercase --sha512 Dockerfile
+docker-compose up -d
 ```
 
 ## Get
 Latest build:
 ```bash
-docker pull akito13/alpine
+docker pull akito13/deluge
 ```
 Fixed version:
 ```bash
-docker pull akito13/alpine:0.4.0
+docker pull akito13/deluge:0.1.0
 ```
 Tags follow semver, without the `v`.
 Git tags equal Docker tags, so no need to check tags explicitly on Docker Hub.
@@ -43,7 +40,7 @@ Git tags equal Docker tags, so no need to check tags explicitly on Docker Hub.
 ## Build
 Build yourself:
 ```bash
-docker build -t akito-alpine:test -f Dockerfile .
+docker build -t akito-deluge:test -f Dockerfile .
 ```
 
 ## License
