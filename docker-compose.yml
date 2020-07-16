@@ -1,0 +1,35 @@
+version: '3.6'
+
+services:
+  deluge:
+    image: akito13/deluge
+    container_name: deluge
+    ports:
+      - published: 58846
+        target: 58846
+        protocol: tcp
+        mode: host
+    environment:
+      - 'AUTOADD_ENABLE=true'
+      - 'COMPACT_ALLOCATION=true'
+      - 'COPY_TORRENT_FILE=true'
+      - 'MAX_ACTIVE_DOWNLOADING=30'
+      - 'MAX_ACTIVE_LIMIT=300'
+      - 'MAX_ACTIVE_SEEDING=100'
+      - 'MAX_CONNECTIONS_GLOBAL=200'
+      - 'MAX_CONNECTIONS_PER_SECOND=20'
+      - 'MAX_CONNECTIONS_PER_TORRENT=-1'
+      - 'MAX_DOWNLOAD_SPEED=5000.0'
+      - 'MAX_DOWNLOAD_SPEED_PER_TORRENT=-1'
+      - 'MAX_HALF_OPEN_CONNECTIONS=50'
+      - 'MAX_UPLOAD_SLOTS_GLOBAL=30'
+      - 'MAX_UPLOAD_SLOTS_PER_TORRENT=-1'
+      - 'MAX_UPLOAD_SPEED=-1'
+      - 'MAX_UPLOAD_SPEED_PER_TORRENT=-1'
+      - 'MOVE_COMPLETED=true'
+      - 'RANDOM_OUTGOING_PORTS=true'
+      - 'SUPER_SEEDING=true'
+      - 'SEND_INFO=true'
+    volumes:
+      - '/home/deluge/tnt:/home/deluge/tnt'
+      - '/home/deluge/config:/home/deluge/config'
