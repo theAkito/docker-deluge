@@ -16,6 +16,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>. #
 #########################################################################
 
+set -e
+
 if [ ! -f ${CONF_DIR}/fixed_conf ]; then
   sed -i \
       -e "s|PLUGIN_DIR|${PLUGIN_DI}|" \
