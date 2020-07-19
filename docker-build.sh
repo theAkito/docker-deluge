@@ -32,8 +32,8 @@ function white_brackets { local args="$@"; white_printf "["; printf "${args}"; w
 function echoDebug  { local args="$@"; if [[ ${debug_flag} == true ]]; then                                             #
 white_brackets "$(white_printf   "DEBUG")" && echo " ${args}"; fi; }                                                    #
 function echoInfo   { local args="$@"; white_brackets "$(green_printf  "INFO" )"  && echo " ${args}"; }                 #
-function echoWarn   { local args="$@"; white_brackets "$(yellow_printf "WARN" )"  && echo " ${args}" 1>&2; }           #
-function echoError  { local args="$@"; white_brackets "$(red_printf    "ERROR")"  && echo " ${args}" 1>&2; }           #
+function echoWarn   { local args="$@"; white_brackets "$(yellow_printf "WARN" )"  && echo " ${args}" 1>&2; }            #
+function echoError  { local args="$@"; white_brackets "$(red_printf    "ERROR")"  && echo " ${args}" 1>&2; }            #
 # Silences commands' STDOUT as well as STDERR.                                                                          #
 function silence { local args="$@"; ${args} &>/dev/null; }                                                              #
 # Check your privilege.                                                                                                 #
@@ -54,24 +54,27 @@ debug_flag=false                                                                
 #
 ## Automatized Usage
 ##
-### bash docker-build.sh        0.1.0                0.1.0                 repo/image:0.1.0
-##                              ^~~~~                ^~~~~                 ^~~~~~~~~~~~~~~~
-##                              BUILD_VERSION        BUILD_REVISION        Complete Docker Tag
+### bash docker-build.sh        0.1.0             0.1.0              repo/image:0.1.0         true
+##                              ^~~~~             ^~~~~              ^~~~~~~~~~~~~~~~         ^~~~
+##                              BUILD_VERSION     BUILD_REVISION     Complete Docker Tag      Build with "latest" tag, too?
 #
 build_version="$1"
 build_revision="$2"
 tag="$3"
+latest="$4"
 current_time="$(date +'%Y-%m-%dT%H:%M:%S%Z')"
 # Set to "false" if you want to automatize me.
 interactive=true
 
-if [[ interactive ]]; then
+if [[ $interactive == true ]]; then
   function describe {
     # Light grey output.
     printf '\033[38;5;250m%s%s%b\033[0m'  "==> " "$1" "\n"
   }
   function inputVerificationError {
     echoError "Please don't enter whitespace."
+    white_echo "Try again..."
+    echo
   }
   function askBuildVersion {
     yellow_echo "Build version:"
@@ -87,9 +90,16 @@ if [[ interactive ]]; then
     describe "repo/image:version"
     describe "Version may match build version."
   }
+  function askIfBuildAsLatestToo {
+    yellow_echo "Build this image additionally with the tag \"latest\", as well? [Y/n]"
+    describe "Confirm, if you want to push the latest image"
+    describe 'with the current explicit version provided in the Docker tag'
+    describe 'and with the "latest" tag, as well.'
+  }
   askBuildVersion
+  inputVerificationPattern='[[:space:]]|^$'
   while read -e input; do
-    if ! [[ "${input}" =~ [[:space:]] ]]; then
+    if ! [[ "${input}" =~ ${inputVerificationPattern} ]]; then
       build_version="$input"
       break
     else
@@ -99,7 +109,7 @@ if [[ interactive ]]; then
   done
   askBuildRevision
   while read -e input; do
-    if ! [[ "${input}" =~ [[:space:]] ]]; then
+    if ! [[ "${input}" =~ ${inputVerificationPattern} ]]; then
       build_revision="$input"
       break
     else
@@ -109,7 +119,7 @@ if [[ interactive ]]; then
   done
   askDockerTag
   while read -e input; do
-    if ! [[ "${input}" =~ [[:space:]] ]]; then
+    if ! [[ "${input}" =~ ${inputVerificationPattern} ]]; then
       tag="$input"
       break
     else
@@ -117,11 +127,20 @@ if [[ interactive ]]; then
       askDockerTag
     fi
   done
+  askIfBuildAsLatestToo
+  while read -e input; do
+    case "${input}" in
+      [Tt]rue|[Yy]|[Yy]es|'') latest=true; break ;;
+      [Ff]alse|[Nn]|[Nn]o) latest=false; break ;;
+      *) askIfBuildAsLatestToo; continue ;;
+    esac
+  done
   unset -f describe
   unset -f inputVerificationError
   unset -f askBuildVersion
   unset -f askBuildRevision
   unset -f askDockerTag
+  unset -f askIfBuildAsLatestToo
 fi
 
 if [[ -z "${build_version}" ]]; then
@@ -142,12 +161,28 @@ if [[ -z "${tag}" ]]; then
   exit 1
 fi
 
+if [[ -z "${latest}" ]]; then
+  echoError 'Not declared, if build with "latest" tag is requested'
+  echoError "Provide a \"Yes\" or \"No\" as the fourth argument to $0."
+  exit 1
+fi
 
-docker build \
-  --build-arg BUILD_VERSION=$build_version \
-  --build-arg BUILD_REVISION=$build_revision \
-  --build-arg BUILD_DATE=$current_time \
-  --force-rm \
-  --tag "${tag}" \
-  --file Dockerfile \
-  .
+function dockerBuild {
+  if [[ "$1" == "latest" ]]; then
+    tag="$(printf '%s%s' "${tag%:*}" ":latest")"
+  fi
+  docker build \
+    --build-arg BUILD_VERSION=$build_version \
+    --build-arg BUILD_REVISION=$build_revision \
+    --build-arg BUILD_DATE=$current_time \
+    --force-rm \
+    --tag "${tag}" \
+    --file Dockerfile \
+    .
+}
+
+dockerBuild
+
+if [[ $latest == true ]]; then
+  dockerBuild latest
+fi
