@@ -62,6 +62,7 @@ build_version="$1"
 build_revision="$2"
 tag="$3"
 latest="$4"
+multiarch="$5"
 current_time="$(date +'%Y-%m-%dT%H:%M:%S%Z')"
 # Set to "false" if you want to automatize me.
 interactive=true
@@ -92,9 +93,19 @@ if [[ $interactive == true ]]; then
   }
   function askIfBuildAsLatestToo {
     yellow_echo "Build this image additionally with the tag \"latest\", as well? [Y/n]"
-    describe "Confirm, if you want to push the latest image"
+    describe "Confirm, if you want to build the latest image"
     describe 'with the current explicit version provided in the Docker tag'
     describe 'and with the "latest" tag, as well.'
+  }
+  function askMultiArchBuild {
+    yellow_echo "Build this image with buildx for a multi-arch build? [y/N]"
+    describe "Confirm, if you want build and push the latest image"
+    describe 'as a multi-architectural build created with buildx.'
+    describe 'This presumes you are already logged in through "docker login" with the correct account.'
+    describe "This option assumes you know what you are doing and have already"
+    describe 'successfully enabled the experimental "buildx" feature and already set up a builder, etc.'
+    describe "Therefore, choose this option only if you know what you are doing."
+    describe "Otherwise, deny this question."
   }
   askBuildVersion
   inputVerificationPattern='[[:space:]]|^$'
@@ -133,6 +144,14 @@ if [[ $interactive == true ]]; then
       [Tt]rue|[Yy]|[Yy]es|'') latest=true; break ;;
       [Ff]alse|[Nn]|[Nn]o) latest=false; break ;;
       *) askIfBuildAsLatestToo; continue ;;
+    esac
+  done
+  askMultiArchBuild
+  while read -e input; do
+    case "${input}" in
+      [Tt]rue|[Yy]|[Yy]es) multiarch=true; break ;;
+      [Ff]alse|[Nn]|[Nn]o|'') multiarch=false; break ;;
+      *) askMultiArchBuild; continue ;;
     esac
   done
   unset -f describe
@@ -181,8 +200,30 @@ function dockerBuild {
     .
 }
 
-dockerBuild
+function dockerBuildx {
+  if [[ "$1" == "latest" ]]; then
+    tag="$(printf '%s%s' "${tag%:*}" ":latest")"
+  fi
+  docker buildx build \
+    --build-arg BUILD_VERSION=$build_version \
+    --build-arg BUILD_REVISION=$build_revision \
+    --build-arg BUILD_DATE=$current_time \
+    --force-rm \
+    --platform linux/arm/v7,linux/arm64/v8,linux/amd64 \
+    --push \
+    --tag "${tag}" \
+    --file Dockerfile \
+    .
+}
 
-if [[ $latest == true ]]; then
-  dockerBuild latest
+if   [[ $multiarch == false ]]; then
+  dockerBuild
+  if [[ $latest == true ]]; then
+    dockerBuild latest
+  fi
+elif [[ $multiarch == true ]]; then
+  dockerBuildx
+  if [[ $latest == true ]]; then
+    dockerBuildx latest
+  fi
 fi
