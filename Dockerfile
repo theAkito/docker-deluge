@@ -1,5 +1,9 @@
 FROM alpine:edge
 
+ARG BUILD_VERSION
+ARG BUILD_REVISION
+ARG BUILD_DATE
+
 LABEL maintainer="Akito <the@akito.ooo>"
 LABEL org.opencontainers.image.authors="Akito <the@akito.ooo>"
 LABEL org.opencontainers.image.vendor="Akito"
@@ -10,10 +14,6 @@ LABEL org.opencontainers.image.title="Deluge Daemon"
 LABEL org.opencontainers.image.description="Deluge daemon in a Docker image. Easy to use and ready to go."
 LABEL org.opencontainers.image.source="https://github.com/theAkito/docker-deluge"
 LABEL org.opencontainers.image.licenses="GPL-3.0+"
-
-ARG BUILD_VERSION
-ARG BUILD_REVISION
-ARG BUILD_DATE
 
 # Deluge OS user
 ARG USER_ID=510
