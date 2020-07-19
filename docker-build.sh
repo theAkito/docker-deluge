@@ -54,9 +54,9 @@ debug_flag=false                                                                
 #
 ## Automatized Usage
 ##
-### bash docker-build.sh        0.1.0             0.1.0              repo/image:0.1.0         true
-##                              ^~~~~             ^~~~~              ^~~~~~~~~~~~~~~~         ^~~~
-##                              BUILD_VERSION     BUILD_REVISION     Complete Docker Tag      Build with "latest" tag, too?
+### bash docker-build.sh        0.1.0             0.1.0              repo/image:0.1.0         true                             false
+##                              ^~~~~             ^~~~~              ^~~~~~~~~~~~~~~~         ^~~~                             ^~~~~
+##                              BUILD_VERSION     BUILD_REVISION     Complete Docker Tag      Build with "latest" tag, too?    Build multi-arch build with "buildx"?
 #
 build_version="$1"
 build_revision="$2"
@@ -181,8 +181,14 @@ if [[ -z "${tag}" ]]; then
 fi
 
 if [[ -z "${latest}" ]]; then
-  echoError 'Not declared, if build with "latest" tag is requested'
+  echoError 'Not declared, if build with "latest" tag is requested.'
   echoError "Provide a \"Yes\" or \"No\" as the fourth argument to $0."
+  exit 1
+fi
+
+if [[ -z "${multiarch}" ]]; then
+  echoError 'Not declared, if multiarch build with "buildx" is requested.'
+  echoError "Provide a \"Yes\" or \"No\" as the fifth argument to $0."
   exit 1
 fi
 

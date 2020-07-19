@@ -7,7 +7,7 @@
 ![Docker Image Size (latest semver)](https://img.shields.io/docker/image-size/akito13/deluge?style=plastic)
 ![Docker Cloud Automated build](https://img.shields.io/docker/cloud/automated/akito13/deluge?style=plastic)
 
-[![Upstream](https://img.shields.io/badge/upstream-project-yellow?style=plastic)](https://github.com/borgbackup/borg)
+[![Upstream](https://img.shields.io/badge/upstream-project-yellow?style=plastic)](https://github.com/deluge-torrent/deluge)
 
 ![GitHub](https://img.shields.io/github/license/theAkito/docker-deluge?style=plastic)
 ![Liberapay patrons](https://img.shields.io/liberapay/patrons/Akito?style=plastic)
